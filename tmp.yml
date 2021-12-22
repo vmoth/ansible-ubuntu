@@ -35,6 +35,7 @@
          - clangd-12
          - lldb-12
          - lld-12
+         - ripgrep
          - lsb-release
          - wget
          - software-properties-common
