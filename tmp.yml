@@ -1,0 +1,176 @@
+---
+- hosts: all
+  tasks:
+   - name: install gnupg2
+     become: yes
+     apt: 
+       update_cache: yes
+       name:
+         - gnupg2
+       state: present
+   - name: add PPA do neovim
+     become: yes
+     apt_repository:
+       validate_certs: no
+       repo: 'ppa:neovim-ppa/unstable'
+       state: present
+   - name: add PPA do fish
+     become: yes
+     apt_repository:
+       validate_certs: no
+       repo: 'ppa:fish-shell/release-3'
+       state: present
+   - name: install git
+     become: yes
+     apt: 
+       update_cache: yes
+       name:
+         - git
+         - maven
+         - gradle
+         - vim
+         - neovim
+         - curl
+         - fish
+         - clangd-12
+         - lldb-12
+         - lld-12
+         - lsb-release
+         - wget
+         - software-properties-common
+       state: present
+   - name: download llvm.sh
+     get_url: url=https://apt.llvm.org/llvm.sh dest=/tmp/llvm.sh
+   - name: install chmod llvm.sh
+     command: chmod +x /tmp/llvm.sh  
+   - name: install llvm.sh
+     command: /tmp/llvm.sh 12  
+     become: yes
+   - name: ln clangd-12
+     command: ln -s /usr/bin/clangd-12 /usr/bin/clangd
+     become: yes
+   - name: Ensure  directory exists
+     file:
+       path: "{{ item }}"
+       state: directory
+       recurse: no
+       mode: 0750
+     loop:
+       - "~/.config/nvim"
+   - name: change yama
+     command: sh -c 'echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope'
+   - name: install plug
+     command: sh -c 'curl -x socks5h://192.168.11.12:7893 -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+
+   - name: Deploy plugins
+     git:
+       dest: "~/.config/nvim"
+       repo: "{{ item.url }}"
+       clone: yes
+       update: yes
+       recursive: no
+     loop:
+     - name: my-nvim
+       url: https://github.com/vmoth/nvim.git
+   - name: Deploy plugins
+     environment:
+        ALL_PROXY: "socks5h://192.168.11.12:7893"
+     git:
+       dest: "~/.config/plug/{{ item.name }}"
+       repo: "{{ item.url }}"
+       clone: yes
+       update: yes
+       recursive: no
+     loop:
+     - name: vim-airline
+       url: https://github.com/vim-airline/vim-airline
+     - name: vim-colors-solarized
+       url: https://github.com/altercation/vim-colors-solarized
+     - name: vim
+       url: https://github.com/dracula/vim
+     - name: molokai
+       url: https://github.com/tomasr/molokai
+     - name: vista.vim
+       url: https://github.com/liuchengxu/vista.vim
+     - name: vim-commentary
+       url: https://github.com/tpope/vim-commentary
+     - name: phd
+       url: https://github.com/vim-scripts/phd
+     - name: vim-surround
+       url: https://github.com/tpope/vim-surround
+     - name: vim-one
+       url: https://github.com/rakr/vim-one
+     - name: vim-sleuth
+       url: https://github.com/tpope/vim-sleuth
+     - name: vim-airline
+       url: https://github.com/vim-airline/vim-airline
+     - name: vim-airline-themes
+       url: https://github.com/vim-airline/vim-airline-themes
+     - name: indent-blankline.nvim
+       url: https://github.com/lukas-reineke/indent-blankline.nvim
+     - name: vim-fugitive
+       url: https://github.com/tpope/vim-fugitive
+     - name: vim-repeat
+       url: https://github.com/tpope/vim-repeat
+     - name: nerdtree
+       url: https://github.com/scrooloose/nerdtree
+     - name: vimproc.vim
+       url: https://github.com/Shougo/vimproc.vim
+     - name: wildfire.vim
+       url: https://github.com/gcmt/wildfire.vim
+     - name: vim-easymotion
+       url: https://github.com/Lokaltog/vim-easymotion
+     - name: fcitx.vim
+       url: https://github.com/lilydjwg/fcitx.vim
+     - name: findstr.vim
+       url: https://github.com/vim-scripts/findstr.vim
+     - name: asyncrun.vim
+       url: https://github.com/skywind3000/asyncrun.vim
+     - name: ctrlp.vim
+       url: https://github.com/kien/ctrlp.vim
+     - name: ack.vim
+       url: https://github.com/mileszs/ack.vim
+     - name: vim-test
+       url: https://github.com/vim-test/vim-test
+     - name: vim-maximizer
+       url: https://github.com/szw/vim-maximizer
+     - name: nvim-lspconfig
+       url: https://github.com/neovim/nvim-lspconfig
+     - name: vim-choosewin
+       url: https://github.com/t9md/vim-choosewin
+     - name: LuaSnip
+       url: https://github.com/L3MON4D3/LuaSnip
+     - name: cmp_luasnip
+       url: https://github.com/saadparwaiz1/cmp_luasnip
+     - name: cmp-nvim-lsp
+       url: https://github.com/hrsh7th/cmp-nvim-lsp
+     - name: nvim-autopairs
+       url: https://github.com/windwp/nvim-autopairs
+     - name: cmp-buffer
+       url: https://github.com/hrsh7th/cmp-buffer
+     - name: nvim-cmp
+       url: https://github.com/hrsh7th/nvim-cmp
+     - name: nvim-jdtls
+       url: https://github.com/mfussenegger/nvim-jdtls
+     - name: nvim-dap
+       url: https://github.com/mfussenegger/nvim-dap
+     - name: nvim-dap-ui
+       url: https://github.com/rcarriga/nvim-dap-ui
+     - name: gruvbox
+       url: https://github.com/morhetz/gruvbox
+     - name: plenary.nvim
+       url: https://github.com/nvim-lua/plenary.nvim
+     - name: popup.nvim
+       url: https://github.com/nvim-lua/popup.nvim
+     - name: harpoon
+       url: https://github.com/ThePrimeagen/harpoon
+     - name: yats.vim
+       url: https://github.com/HerringtonDarkholme/yats.vim
+     - name: nord-vim
+       url: https://github.com/arcticicestudio/nord-vim
+     - name: popup.nvim
+       url: https://github.com/nvim-lua/popup.nvim
+     - name: plenary.nvim
+       url: https://github.com/nvim-lua/plenary.nvim
+     - name: telescope.nvim
+       url: https://github.com/nvim-telescope/telescope.nvim
