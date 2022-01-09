@@ -38,6 +38,8 @@
          - ripgrep
          - lsb-release
          - wget
+         - pip
+         - xclip
          - software-properties-common
        state: present
    - name: download llvm.sh
